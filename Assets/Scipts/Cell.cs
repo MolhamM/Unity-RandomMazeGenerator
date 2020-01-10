@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 public class Cell  {
+	Material lineMaterial;
 	int i,j;
 	bool[] walls; 
 	bool Isvisited;
@@ -13,9 +14,20 @@ public class Cell  {
 	int cols;
 	int step;
 	int rows;
+	int beginRow;
+	int beginCol;
+	int targetRow;
+	int targetCol;
 	GameObject[] RendererWalls;
-	public Cell(int x , int y,int canvaswidth , float cellwidth , int canvashight ,float cellhight)
+	public int dijkstraValue;
+	public Cell dijkstraPrevious{ get; set; }
+	public int Astar_H;
+	public int Astar_G;
+	public int Astar_F;
+	public Cell Astar_Parent{ get; set; }
+	public Cell(int x , int y,int canvaswidth , float cellwidth , int canvashight ,float cellhight,int begin_row,int begin_col,int target_row,int target_col, Material mat)
 	{
+		lineMaterial = mat;
 		this.i = x;
 		this.j = y;
 		this.canvasWidth = canvaswidth;
@@ -23,7 +35,13 @@ public class Cell  {
 		this.canvasHight = canvashight;
 		this.cellHight = cellhight;
 		this.step = 0;
+		this.beginCol = begin_col;
+		this.beginRow = begin_row;
+		this.targetCol = target_col;
+		this.targetRow = target_row;
+		Astar_H = ((Math.Abs (targetCol - beginCol)) + (Math.Abs (targetRow - beginRow)));
 		Isvisited = false;
+		dijkstraValue = int.MaxValue;
 		RendererWalls = new GameObject[4];// top , right , bottom , left
 		walls= new bool [4];// top , right , bottom , left
 		cols = (int) (this.canvasWidth / this.cellWidth);
@@ -34,13 +52,19 @@ public class Cell  {
 	void DrawLine(Vector3 start, Vector3 end, ref GameObject originalLine)
 	{
 		GameObject tempLine = new GameObject();
-		tempLine.gameObject.tag = "line";
+		tempLine.gameObject.tag = "line2";
 		tempLine.transform.position = start;
 		tempLine.AddComponent<LineRenderer>();
 		LineRenderer lr = tempLine.GetComponent<LineRenderer>();
-		lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
-		lr.SetColors(Color.white, Color.white);
-		lr.SetWidth(0.1f, 0.1f);
+		//lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
+		//lr.material = new Material (Shader.Find("Unlit/Texture"));
+		//lr.material = new Material (Shader.Find("Transparent/Diffuse"));
+		//lr.material = new Material (Shader.Find("Diffuse"));
+		lr.material = lineMaterial;
+		lr.startColor = Color.white;
+		lr.endColor = Color.white;
+		lr.startWidth = 0.1f;
+		lr.endWidth = 0.1f;
 		lr.SetPosition(0, start);
 		lr.SetPosition(1, end);
 		originalLine = tempLine;
@@ -126,5 +150,7 @@ public class Cell  {
 	public int GetSteps(){
 		return this.step;
 	}
-	
+	public void  Update_Astar_F(){
+		Astar_F = Astar_G + Astar_H;
+	}
 }
